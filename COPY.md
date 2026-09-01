@@ -11,8 +11,10 @@ whole design of this edit is that nobody knows it's an ad until 0:27.
 Hashtags, on their own line: `#history #archaeology #ancienthistory #linguistics #voynich
 #unsolvedmysteries`
 
-Do **not** tag the app in the caption. The logo at 0:30 is the reveal; naming it up top
-throws the reveal away and tells the algorithm to serve this to people who already know you.
+Do **not** tag the app in the caption. The end card at 0:30 carries the wordmark and
+`verbavia.com` for 1.35 seconds, which is the only call to action in the piece. Naming it up
+top throws the reveal away and tells the algorithm to serve this to people who already know
+you. Put the link in the bio; people will screenshot the last frame either way.
 
 ## Pinned comment
 

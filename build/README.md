@@ -50,15 +50,25 @@ does not. Hold it half a second longer than feels comfortable.
 
 ## Swapping in the real logo
 
-`render_full.py` draws a placeholder wordmark (`LOGO_TEXT = "VERBAVIA"`) in `logo_layer()`.
-Replace that function body with a paste of your logo PNG:
+`render_full.py` sets the end card in two constants near the top:
+
+```python
+LOGO_TEXT = "VERBAVIA"      # wordmark
+LOGO_URL  = "verbavia.com"  # destination, held under the mark
+```
+
+The domain is the only call to action in the whole edit, so it holds for the last 1.35s
+under the wordmark. To use a real logo file instead, replace `logo_layer()`:
 
 ```python
 def logo_layer():
     L = Image.new("RGBA", (W, H), (0,0,0,0))
     lg = Image.open("logo.png").convert("RGBA")
     lg.thumbnail((int(W*0.46), int(H*0.12)), Image.LANCZOS)
-    L.paste(lg, ((W-lg.width)//2, int(H*0.565)), lg)
+    L.paste(lg, ((W-lg.width)//2, int(H*0.545)), lg)
+    d = ImageDraw.Draw(L)
+    lspace(d, (W/2, H*0.545+lg.height+34), LOGO_URL,
+           ImageFont.truetype(FONT_N, 31), (238,233,222,205), sp=9)
     return L
 ```
 

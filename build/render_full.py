@@ -82,7 +82,8 @@ CARDS = [
 TURN_A = (27.15, 28.65, ["Some languages can", "never be learned."])
 TURN_B = (29.10, 31.50, ["Yours isn't one of them."])
 LOGO_T = 30.15
-LOGO_TEXT = "VERBAVIA"          # placeholder wordmark - swap for the real logo PNG
+LOGO_TEXT = "VERBAVIA"          # wordmark - swap for the real logo PNG if you have one
+LOGO_URL  = "verbavia.com"      # destination, held under the mark
 
 # ---- look ---------------------------------------------------------------
 def vignette_mask(w, h, strength=0.46, radius=0.95):
@@ -163,7 +164,8 @@ def hud_layer(numeral, years, fill_frac):
 def logo_layer():
     L = Image.new("RGBA", (W, H), (0,0,0,0)); d = ImageDraw.Draw(L)
     d.rectangle([W*0.36, H*0.545, W*0.64, H*0.545+1], fill=(235,230,218,110))
-    lspace(d, (W/2, H*0.585), LOGO_TEXT, ImageFont.truetype(FONT_S, 68), (250,247,240,255), sp=13)
+    lspace(d, (W/2, H*0.583), LOGO_TEXT, ImageFont.truetype(FONT_S, 68), (250,247,240,255), sp=13)
+    lspace(d, (W/2, H*0.583+104), LOGO_URL, ImageFont.truetype(FONT_N, 31), (238,233,222,205), sp=9)
     return L
 
 HOOK = body_layer(["Nobody has ever", "read this."], size=78, y0=0.715)
