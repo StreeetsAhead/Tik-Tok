@@ -7,8 +7,10 @@ build/frames/
 build/frames_cq/
 build/frames_eu/
 build/frames_full/
+build/frames_pr/
 build/qc_*.png
 build/qc_eu.png
+build/render*.log
 build/render_cq.log
 build/src/
 build/style2.png
