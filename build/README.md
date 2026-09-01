@@ -1,47 +1,91 @@
-# "UNREAD" — TikTok edit pipeline
+# "UNREAD" — a 31.5s TikTok edit
 
-A 28s music-driven edit about five scripts no living person can read.
-The language-app logo appears only in the final two seconds.
+Five things humans wrote that no living person can read, counted down 5 → 1. The
+language-app logo appears only in the final two seconds. Nothing is shot; every frame is
+public-domain or openly-licensed material pulled off the web.
 
-Currently built: **the opening hook (0.0–4.5s).**
+## The grid
 
-## Sources
+**80 BPM, beat = 0.75s, first downbeat at 0:00.** Every cut in the edit lands on a beat.
+Cards are exactly 4.5s (6 beats), so card boundaries fall at 4.50 / 9.00 / 13.50 / 18.00 /
+22.50 / 27.00 — alternating between bar downbeats and the third beat of a bar.
 
-All assets are fetched, not shot. The Voynich Manuscript (Beinecke MS 408)
-is served by Yale's IIIF endpoint as public-domain scans:
+## Music
 
-    https://collections.library.yale.edu/manifests/2002046   # 213 canvases
-    https://collections.library.yale.edu/iiif/2/<id>/full/2600,/0/default.jpg
+Cut for **Jóhann Jóhannsson — "The Beast"** (*Sicario*, 2015). It is a single escalating
+throb that never resolves, which is the exact shape of this countdown. Jóhannsson also
+scored *Arrival*, a film about an undecipherable script, so it is the right composer for
+this by more than coincidence.
 
-Native resolution is 2793x3761; the server returns 400 above ~2600px wide.
-`folios.json` maps folio numbers (`52r`, `78r`, ...) to IIIF ids.
+Two sync points matter more than strict tempo matching:
 
-Folios used in the hook:
+- **0:03.00** — the counter drops in. Put the track's first real swell here.
+- **0:27.00** — the turn. Put the track's climax here.
 
-| folio | id      | shot |
-|-------|---------|------|
-| 78r   | 1006214 | figures in the green pools; also the wide finish and the script column |
-| 71r   | 1006202 | zodiac wheel |
-| 75r   | 1006208 | figures in the stream |
-| 33v   | 1006139 | plant with no known species |
+`full.wav` is a synthesized guide bed (sub impacts, wax-cylinder crackle, a noise riser, a
+41.2Hz drone stack, escalating kick). It is licence-free and ships in the muxed cut. Mute it
+and lay your track over the top, or keep the impacts underneath for weight — they are on the
+same grid.
+
+## Timeline
+
+| t | card | imagery | text |
+|---|---|---|---|
+| 0.00 | hook | 4 Voynich folios, fast | — |
+| 1.80 | | script column | "Nobody has ever read this." |
+| 3.00 | | (black flash) counter enters | `5 OF 5` |
+| 4.50 | **5** | Phaistos Disc, spiral push → full object | 241 symbols · only one · too short to crack |
+| 9.00 | **4** | Rongorongo glyph detail → Easter Island | 26 tablets · last readers died in the 1860s |
+| 13.50 | **3** | Linear A tablet, wide → incisions | *We know how it sounds. We do not know what it means.* |
+| 18.00 | **2** | Indus seal, script detail → full seal | 5m people · 4,000 inscriptions · avg. 5 characters |
+| 22.50 | **1** | Voynich zodiac → script column | beat the cryptographers who broke PURPLE |
+| 27.00 | turn | fade to black | "Some languages can never be learned." |
+| 29.10 | | black | "Yours isn't one of them." |
+| 30.15 | | | **logo** |
+
+Card 3 is the one to protect in any recut. "We know how it sounds, we do not know what it
+means" is the single best beat in the video — Linear A shares signs with Linear B, which
+Ventris deciphered in 1952, so the phonetic values carry over but the language behind them
+does not. Hold it half a second longer than feels comfortable.
+
+## Swapping in the real logo
+
+`render_full.py` draws a placeholder wordmark (`LOGO_TEXT = "VERBAVIA"`) in `logo_layer()`.
+Replace that function body with a paste of your logo PNG:
+
+```python
+def logo_layer():
+    L = Image.new("RGBA", (W, H), (0,0,0,0))
+    lg = Image.open("logo.png").convert("RGBA")
+    lg.thumbnail((int(W*0.46), int(H*0.12)), Image.LANCZOS)
+    L.paste(lg, ((W-lg.width)//2, int(H*0.565)), lg)
+    return L
+```
+
+Keep it inside the frame's world — the grain and drone keep running under it on purpose. A
+hard cut to a clean white brand card breaks the spell and craters the completion rate at the
+exact moment it counts.
 
 ## Build
 
-    pip install numpy pillow && apt-get install -y ffmpeg
-    python3 render_opener.py     # -> build/frames/*.png   (135 frames)
-    python3 render_audio.py      # -> build/opener.wav
-    ffmpeg -y -framerate 30 -i frames/f%04d.png -i opener.wav \
-      -c:v libx264 -profile:v high -crf 17 -pix_fmt yuv420p -r 30 \
-      -c:a aac -b:a 192k -movflags +faststart -shortest UNREAD_opener.mp4
+```
+pip install numpy pillow && apt-get install -y ffmpeg
+python3 fetch_assets.py          # -> assets/src (Voynich), assets/wm (Commons)
+python3 render_full.py           # -> UNREAD_full_silent.mp4  (~10 min, pipes to ffmpeg)
+python3 render_audio_full.py     # -> full.wav
+ffmpeg -y -i UNREAD_full_silent.mp4 -i full.wav -c:v copy -c:a aac -b:a 192k \
+       -movflags +faststart -shortest UNREAD_full.mp4
+```
 
-## Notes
+Shots are `(start, end, key, cx, cy, width_frac, zoom0, zoom1, mode)` in `SHOTS`. `mode` is
+`fill` (9:16 crop, for tight pushes) or `fit` (whole object centred on a dark ground, for
+museum pieces wider than 9:16). Retiming is a one-line change.
 
-`render_opener.py` composites every frame in Pillow/numpy rather than in an
-ffmpeg filtergraph — the grade, candle-light falloff, flicker, grain and
-vignette are all explicit and tunable in one place. Shots are defined as
-`(source, cx, cy, width_frac, zoom_start, zoom_end, duration)`.
+`render_opener.py` is the standalone 4.5s hook, kept because it renders in about a minute
+and is useful for iterating on the look without waiting for the full pass.
 
-`render_audio.py` synthesizes the whole bed from scratch (no licensed track):
-sub impacts with pitch glide, wax-cylinder crackle, a noise riser, and a
-41.2Hz drone stack with a 70bpm kick. Swap in a real track by muxing it in
-place of `opener.wav`.
+## Sources and licences
+
+See `../ATTRIBUTION.md`. The Voynich, the Phaistos Disc and the Easter Island plate are
+public domain; the Linear A and Indus plates are CC BY-SA, which is worth a decision before
+this runs as a paid ad.

@@ -1,5 +1,9 @@
 build/frames/
+build/frames_full/
+build/assets/
+build/src/
+build/wm/
 build/*.mp4
 build/*.wav
-build/src/
-build/qc_sheet.png
+build/*.log
+build/qc_*.png
