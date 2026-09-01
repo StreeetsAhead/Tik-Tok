@@ -205,17 +205,19 @@ def frame_bg(t):
     bw, bh = int(IW*cs), int(IH*cs)
     bg = im.resize((bw, bh), Image.BILINEAR, reducing_gap=2.0).crop(
         ((bw-W)//2, (bh-H)//2, (bw-W)//2+W, (bh-H)//2+H))
-    bg = bg.filter(ImageFilter.GaussianBlur(46)).point(lambda v: int(v*0.42)).convert("RGBA")
-    sc = (W*0.98)/IW/zoom
+    bg = bg.filter(ImageFilter.GaussianBlur(46)).point(lambda v: int(v*0.55))
+    sc = (W*1.02)/IW/zoom
     sw, sh = max(int(IW*sc), 2), max(int(IH*sc), 2)
     fg = im.resize((sw, sh), Image.LANCZOS, reducing_gap=3.0)
-    ox, oy = (W-sw)//2, int(H*0.44) - sh//2
-    sh_l = Image.new("RGBA", (W, H), (0,0,0,0))
-    ImageDraw.Draw(sh_l).rectangle([ox-14, oy-14, ox+sw+14, oy+sh+14], fill=(0,0,0,190))
-    bg.alpha_composite(sh_l.filter(ImageFilter.GaussianBlur(26)))
-    bg = bg.convert("RGB")
-    bg.paste(fg, (ox, oy))
-    return bg
+    ox, oy = (W-sw)//2, int(H*0.43) - sh//2
+    # feather the object into the dark with a soft ellipse - no hard rectangle edge
+    mask = Image.new("L", (W, H), 0)
+    ImageDraw.Draw(mask).ellipse(
+        [ox+sw*0.035, oy+sh*0.045, ox+sw*0.965, oy+sh*0.955], fill=255)
+    mask = mask.filter(ImageFilter.GaussianBlur(58))
+    lay = Image.new("RGB", (W, H), (0, 0, 0))
+    lay.paste(fg, (ox, oy))
+    return Image.composite(lay, bg, mask)
 
 for i in range(N):
     t = i/FPS
