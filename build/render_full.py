@@ -80,7 +80,7 @@ CARDS = [
       b=(24.90, 27.00, ["Nobody knows if there is", "a language in it at all."])),
 ]
 TURN_A = (27.15, 28.65, ["Some languages can", "never be learned."])
-TURN_B = (29.10, 31.50, ["Yours isn't one of them."])
+TURN_B = (29.10, 31.50, ["Yours isn\u2019t one of them."])
 LOGO_T = 30.15
 LOGO_TEXT = "VERBAVIA"          # wordmark - swap for the real logo PNG if you have one
 LOGO_URL  = "verbavia.com"      # destination, held under the mark
