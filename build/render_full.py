@@ -20,7 +20,7 @@ SRC = {
  "f78r": f"{VOY}/f78r_hi.jpg", "f71r": f"{VOY}/f71r_hi.jpg",
  "f75r": f"{VOY}/f75r_hi.jpg", "f33v": f"{VOY}/f33v_hi.jpg",
  "phaistos_a": f"{WM}/phaistos_a.jpg", "phaistos_b": f"{WM}/phaistos_b.jpg",
- "roro_champ": f"{WM}/roro_champ.jpg", "roro_fish": f"{WM}/roro_fish.jpg",
+ "roro_champ": f"{WM}/roro_champ.jpg", "roro_chile": f"{WM}/roro_chile.jpg",
  "lineara":    f"{WM}/lineara_1.jpg",  "indus": f"{WM}/indus_eleph.jpg",
  "moai":       f"{WM}/moai_rano.jpg",
 }
@@ -46,10 +46,10 @@ SHOTS = [
  (4.50, 6.75, "phaistos_a", 0.50, 0.49, 0.34, 1.00, 1.12, "fill"),
  (6.75, 9.00, "phaistos_b", 0.50, 0.50, 1.00, 1.04, 1.00, "fit"),
  # 4 RONGORONGO
- (9.00, 11.25, "roro_champ", 0.46, 0.50, 0.21, 1.00, 1.10, "fill"),
- (11.25, 13.50, "moai",      0.50, 0.44, 0.80, 1.06, 1.00, "fill"),
+ (9.00, 11.25, "roro_chile", 0.46, 0.52, 0.32, 1.00, 1.11, "fill"),
+ (11.25, 13.50, "moai",      0.50, 0.63, 0.50, 1.07, 1.00, "fill"),
  # 3 LINEAR A
- (13.50, 15.75, "lineara", 0.50, 0.50, 0.88, 1.00, 1.05, "fill"),
+ (13.50, 15.75, "lineara", 0.50, 0.52, 0.58, 1.00, 1.06, "fill"),
  (15.75, 18.00, "lineara", 0.44, 0.42, 0.30, 1.00, 1.12, "fill"),
  # 2 INDUS
  (18.00, 20.25, "indus", 0.50, 0.22, 0.30, 1.00, 1.10, "fill"),
@@ -128,7 +128,8 @@ def scrim(L, top=0.56, alpha=176):
     L.alpha_composite(s.filter(ImageFilter.GaussianBlur(72)))
 
 def body_layer(lines, size=70, y0=0.705):
-    L = Image.new("RGBA", (W, H), (0,0,0,0)); scrim(L)
+    L = Image.new("RGBA", (W, H), (0,0,0,0))
+    scrim(L, top=max(0.08, y0-0.17), alpha=190)
     d = ImageDraw.Draw(L); f = ImageFont.truetype(FONT_S, size)
     for i, ln in enumerate(lines):
         lspace(d, (W/2, H*y0 + i*(size*1.28)), ln, f, (250,247,240,255), sp=3)
@@ -230,6 +231,9 @@ for i in range(N):
         arr = grade(np.asarray(bg))
         arr *= (1.0 + 0.018*math.sin(t*11.3) + 0.012*math.sin(t*27.7) + rng.normal(0, 0.004))
         arr += rng.normal(0, 0.016, arr.shape).astype(np.float32)*(0.35 + 0.65*(1-arr))
+        m = float(arr.mean())
+        if m > 1e-4:
+            arr *= min(max((0.26/m)**0.55, 0.62), 1.22)
         arr *= VIG
         if 28.30 <= t < 28.80:                      # fade to the turn
             arr *= 1.0 - ease((t-28.30)/0.50)

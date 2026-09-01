@@ -29,6 +29,7 @@ COMMONS = {
  "phaistos_a":  "File:Phaistos Disc — Side A.jpg",
  "phaistos_b":  "File:Phaistos Disc — Side B.jpg",
  "roro_champ":  "File:Tablette rongo-rongo - musée Champollion.JPG",
+ "roro_chile":  "File:Chile-03436 - Rongorongo (49073321772).jpg",
  "lineara_1":   "File:Minoan Linear A, Crete, AMH, 145099.jpg",
  "indus_eleph": "File:Elephant seal of Indus Valley, Indian Museum, Kolkata.jpg",
  "moai_rano":   "File:Moai Rano raraku.jpg",
