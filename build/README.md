@@ -73,8 +73,16 @@ pip install numpy pillow && apt-get install -y ffmpeg
 python3 fetch_assets.py          # -> assets/src (Voynich), assets/wm (Commons)
 python3 render_full.py           # -> UNREAD_full_silent.mp4  (~10 min, pipes to ffmpeg)
 python3 render_audio_full.py     # -> full.wav
-ffmpeg -y -i UNREAD_full_silent.mp4 -i full.wav -c:v copy -c:a aac -b:a 192k \
-       -movflags +faststart -shortest UNREAD_full.mp4
+# master (CRF 17, ~41 MB)
+ffmpeg -y -i UNREAD_full_silent.mp4 -i full.wav -af loudnorm=I=-15:TP=-1.5:LRA=11 \
+       -c:v copy -c:a aac -b:a 192k -movflags +faststart -shortest UNREAD_full.mp4
+
+# upload copy (CRF 23, ~15 MB) - film grain is expensive to compress, so the
+# master is large; this is visually equivalent after TikTok re-encodes anyway
+ffmpeg -y -i UNREAD_full_silent.mp4 -i full.wav -af loudnorm=I=-15:TP=-1.5:LRA=11 \
+       -c:v libx264 -preset slow -crf 23 -maxrate 6500k -bufsize 13000k \
+       -profile:v high -pix_fmt yuv420p -c:a aac -b:a 160k \
+       -movflags +faststart -shortest UNREAD_full_web.mp4
 ```
 
 Shots are `(start, end, key, cx, cy, width_frac, zoom0, zoom1, mode)` in `SHOTS`. `mode` is
