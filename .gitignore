@@ -7,3 +7,5 @@ build/*.mp4
 build/*.wav
 build/*.log
 build/qc_*.png
+build/frames_eu/
+build/qc_eu.png
