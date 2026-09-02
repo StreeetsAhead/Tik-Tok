@@ -24,7 +24,7 @@ def sting(s,level):
     amp=[0,0.55,0.8,1.0][level]
     # hard mute 60 ms before
     i0=int((s-0.06)*SR); mix[max(i0,0):int(s*SR)]=0.0
-    L=[0,1.2,1.9,2.8][level]; i1=min(int((s+L)*SR),N); n=i1-int(s*SR); lt=np.arange(n)/SR
+    L=[0,0.85,0.95,3.0][level]; i1=min(int((s+L)*SR),N); n=i1-int(s*SR); lt=np.arange(n)/SR
     e=(1-np.clip(lt/L,0,1))**2.2
     seg=np.zeros(n)
     seg+=rng.normal(0,1,n)*e*0.55                                     # noise burst
@@ -43,19 +43,22 @@ def sting(s,level):
     mix[int(s*SR):i1]+=amp*seg
     mix[int(s*SR):int(s*SR)+int(0.004*SR)]*=np.linspace(1,1,int(0.004*SR))    # keep the hard edge
 
-# timeline (s): title 0-1.8 | owl1 1.8-4.73 | r1 4.73-9.0 | owl2 9.0-12.47 | r2 12.47-16.73 | owl3 16.73-21.8 | out 21.8-24.8
+# timeline (f): title 0-54 | owl1 54-78 | r1 78-303 | owl2 303-330 | r2 330-564 | owl3 564-654 | out 654-744
 T=54/FPS
+def hardstop(f):   # cut the sting with the picture
+    j=int(f/FPS*SR); mix[j:j+int(0.03*SR)]*=np.linspace(1,0,int(0.03*SR)); mix[j+int(0.03*SR):j+int(0.08*SR)]=0
 tap(0.0,220,0.5); [pop(0.0+f/FPS,0.3,1100) for f in (4,10,16,22)]
-sting(T,1)
-for s_ in np.arange(T+88/FPS,T+216/FPS,1.0): tick(s_,0.22)
-tap(T+88/FPS,210,0.5); [pop(T+(88+f)/FPS) for f in (40,48,56)]
-sting(T+216/FPS,2)
-for s_ in np.arange(T+320/FPS,T+448/FPS,1.0): tick(s_,0.26,2600)
-tap(T+320/FPS,210,0.5); [pop(T+(320+f)/FPS) for f in (44,52,60)]
-for f in (30,36,42,48,54): tick(T+(320+f)/FPS,0.15,3100)
-sting(T+448/FPS,3)
-mix[int((T+600/FPS)*SR)-int(0.06*SR):int((T+600/FPS)*SR)]=0
-tap(T+600/FPS,220,0.5); tap(T+630/FPS,320,0.45,0.3)
+sting(54/FPS,1); hardstop(78)
+for s_ in np.arange(78/FPS,303/FPS,1.0): tick(s_,0.22)
+tap(78/FPS,210,0.5); [pop((78+f)/FPS) for f in (60,68,76)]; tap((78+150)/FPS,180,0.4); [pop((78+f)/FPS,0.32,1000) for f in (158,162,166)]
+sting(303/FPS,2); hardstop(330)
+for s_ in np.arange(330/FPS,564/FPS,1.0): tick(s_,0.26,2600)
+tap(330/FPS,210,0.5); [pop((330+f)/FPS) for f in (44,52,60)]
+for f in (30,36,42,48,54): tick((330+f)/FPS,0.15,3100)
+tap((330+150)/FPS,180,0.4); [pop((330+f)/FPS,0.32,1000) for f in (158,161,166,169)]
+sting(564/FPS,3)
+mix[int(654/FPS*SR)-int(0.06*SR):int(654/FPS*SR)]=0
+tap(654/FPS,220,0.5); tap(684/FPS,320,0.45,0.3)
 mix-=mix.mean(); pk=np.max(np.abs(mix)); mix=np.tanh(mix/max(pk,1e-9)*1.3)*0.9
 mix*=np.clip((N-np.arange(N))/(0.04*SR),0,1)
 st=np.stack([mix,mix*0.99],axis=1)

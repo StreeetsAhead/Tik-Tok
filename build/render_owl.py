@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFilter
 import numpy as np
 OUT="/home/user/Tik-Tok/build/frames_ow"; os.makedirs(OUT,exist_ok=True)
 YEL=(255,214,10); PAPER=(238,240,255)
-BEATS=[("owl1",0,88),("r1",88,216),("owl2",216,320),("r2",320,448),("owl3",448,600),("out",600,690)]
+BEATS=[("owl1",0,24),("r1",24,249),("owl2",249,276),("r2",276,510),("owl3",510,600),("out",600,690)]
 TITLE_F=54; N=690+TITLE_F; TIMER_LEN=600
 OWLS={k:Image.open(f"{SP}/{k}.png").convert("RGBA") for k in ["owl_l1","owl_l2","owl_l3"]}
 
@@ -71,15 +71,14 @@ def beat_owl(fr,li,level,total):
     o={1:OWLS["owl_l1"],2:OWLS["owl_l2"],3:OWLS["owl_l3"]}[level]
     rng=np.random.default_rng(li*3+level)
     if level==1:
-        sc=0.70*(1+0.06*li/total); jit=(0,0)
-        if li%19==0 and li>10: jit=(rng.integers(-2,3),rng.integers(-2,3))
+        sc=1.00+0.03*li/total; jit=(rng.integers(-4,5),rng.integers(-4,5)) if li<6 else (0,0)
     elif level==2:
-        sc=0.96*(1+0.10*li/total); jit=(rng.integers(-3,4),rng.integers(-3,4)) if li%3==0 else (0,0)
+        sc=1.25+0.05*li/total; jit=(rng.integers(-5,6),rng.integers(-5,6))
     else:
         sc=1.45*(1+0.55*eo(li/total)); jit=(rng.integers(-7,8),rng.integers(-7,8))
     ow=o.resize((int(o.width*sc),int(o.height*sc)),Image.BILINEAR)
     a=ow
-    burst = (level==2 and li%30 in (0,1)) or (level==3 and li%8 in (0,1))
+    burst = (level==2 and li%6 in (0,1)) or (level==3 and li%8 in (0,1))
     if burst:
         arr=np.asarray(ow).copy()
         for _ in range(4+4*level):
@@ -95,7 +94,7 @@ def beat_owl(fr,li,level,total):
             r=int(a.width*(0.085 if level==2 else 0.11)*pulse)
             d.ellipse([cx-r,cyy-r,cx+r,cyy+r],fill=(255,30,30,int((80 if level==2 else 140)*pulse)))
         fr.alpha_composite(L.filter(ImageFilter.GaussianBlur(22 if level==2 else 34)))
-    if level==1 and li%19==1 and li>10:              # one-frame red eye flicker
+    if level==1 and li in (7,15):                    # one-frame red eye flicker
         L=Image.new("RGBA",(W,H),(0,0,0,0)); d=ImageDraw.Draw(L)
         for ex,ey in [(0.44,0.38),(0.66,0.36)]:
             cx=W/2-a.width/2+ex*a.width; cyy=cy-a.height/2+ey*a.height; r=int(a.width*0.07)
@@ -109,8 +108,8 @@ def scene(i):
         fr=Image.new("RGBA",(W,H),(226,227,236,255))
         beat_owl(fr,li,1,total)
         slide_text(fr,"01",40,900,RED,64,170,0,li,dur=6,dy=16,align="l",ls=2)
-        pop_words(fr,["The","owl."],205,112,INK,2,li,cx=64+230)
-        slide_text(fr,"He's just… watching.",44,600,SUB,64,340,10,li,dur=8,align="l")
+        pop_words(fr,["The","owl."],205,112,INK,0,li,stagger=1,dur=3,cx=64+230)
+        slide_text(fr,"He's just… watching.",44,600,SUB,64,340,3,li,dur=5,align="l")
         hud(fr,i)
     elif name=="owl2":
         fr=Image.new("RGBA",(W,H),(26,22,30,255))
@@ -118,8 +117,8 @@ def scene(i):
         b=np.asarray(fr.convert("RGB")).astype(np.float32); b[...,0]+=vg*55; fr=Image.fromarray(np.clip(b,0,255).astype(np.uint8)).convert("RGBA")
         beat_owl(fr,li,2,total)
         slide_text(fr,"03",40,900,RED,64,170,0,li,dur=6,dy=16,align="l",ls=2)
-        pop_words(fr,["The","owl.","Again."],205,104,WHT,1,li,cx=64+330)
-        slide_text(fr,"Miss one day. He knows.",44,600,(215,210,225),64,340,8,li,dur=8,align="l")
+        pop_words(fr,["The","owl.","Again."],205,104,WHT,0,li,stagger=1,dur=3,cx=64+330)
+        slide_text(fr,"Miss one day. He knows.",44,600,(215,210,225),64,340,3,li,dur=5,align="l")
         hud(fr,i,dark=True)
     elif name=="owl3":
         fr=Image.new("RGBA",(W,H),(4,2,5,255))
@@ -137,13 +136,17 @@ def scene(i):
         if name=="r1":
             pop_words(fr,["It's","a","game."],200,112,INK,0,li,hl={"game.":YEL})
             slide_text(fr,"their homepage, not my words:",42,600,SUB,W/2,345,8,li,dur=8)
-            t=(li-8)/12
-            if t>0:
+            t=(li-8)/12; outx=-W*1.3*eo(min(max((li-150)/10,0),1))
+            if t>0 and li<162:
                 e=eo(min(t,1)); card,pad=c["tag"]; img=card.rotate(-3*(1-e)-2,resample=Image.BICUBIC,expand=True)
                 a=img.copy(); a.putalpha(a.split()[3].point(lambda p:int(p*e)))
-                fr.alpha_composite(a,(int(W/2-a.width/2),int(H*0.56+80*(1-e)-a.height/2)))
+                fr.alpha_composite(a,(int(W/2-a.width/2+outx),int(H*0.56+80*(1-e)-a.height/2)))
+            if li>=158:
+                pop_words(fr,["Fun"],H*0.50,150,INK,158,li,dur=6,cx=W*0.30,hl={"Fun":YEL})
+                pop_words(fr,["≠"],H*0.50,150,RED,162,li,dur=6,cx=W*0.53)
+                pop_words(fr,["fluent."],H*0.50,150,INK,166,li,dur=6,cx=W*0.76)
             bt=(li-22)/14
-            if bt>0:
+            if bt>0 and li<150:
                 cw=900; chh=int(506*(900/1077)); x0=W/2-cw/2; y0=H*0.56-chh/2
                 mx,my=x0+cw*0.640,y0+chh*0.660; rx,ry=cw*0.360,chh*0.430
                 L=Image.new("RGBA",(W,H),(0,0,0,0)); ImageDraw.Draw(L).arc([mx-rx,my-ry,mx+rx,my+ry],-70,-70+380*eo(min(bt,1)),fill=RED+(255,),width=12); fr.alpha_composite(L)
@@ -160,12 +163,15 @@ def scene(i):
                 d.rounded_rectangle([60,262,700,310],24,fill=(232,233,244)); pw=640*min(eo((li-20)/24),1)
                 if pw>4: d.rounded_rectangle([60,262,60+pw,310],24,fill=GRN)
                 if li>46: d.text((60,336),"SECTION PASSED",font=F(36,900),fill=GRN)
-            t=(li-10)/10
-            if t>0:
+            t=(li-10)/10; outx=W*1.3*eo(min(max((li-150)/10,0),1))
+            if t>0 and li<162:
                 e=eo(min(t,1)); card=Image.new("RGB",(760,430),WHT); dr(ImageDraw.Draw(card),card)
                 wc,pad=with_shadow(card,34,28,60,14); wc=wc.rotate(2*(1-e)+1.5,resample=Image.BICUBIC,expand=True)
                 a=wc.copy(); a.putalpha(a.split()[3].point(lambda p:int(p*e)))
-                fr.alpha_composite(a,(int(W/2-a.width/2),int(H*0.60+70*(1-e)-a.height/2)))
+                fr.alpha_composite(a,(int(W/2-a.width/2+outx),int(H*0.60+70*(1-e)-a.height/2)))
+            if li>=158:
+                pop_words(fr,["Green","screens."],H*0.50,112,INK,158,li,stagger=3,dur=6)
+                pop_words(fr,["Zero","learning."],H*0.50+130,112,INK,166,li,stagger=3,dur=6,hl={"Zero":RED})
             chip(fr,"hearts run out",W*0.32,H*0.79,5,44,li,fill=RED,fg=WHT)
             chip(fr,"streak guilt",W*0.70,H*0.82,-5,52,li,fill=INK,fg=WHT)
             chip(fr,"plateaus at A2",W*0.45,H*0.88,3,60,li)
@@ -180,7 +186,7 @@ def scene(i):
             e=eo(bt); L=Image.new("RGBA",(W,H),(0,0,0,0)); d=ImageDraw.Draw(L); bw,bh=470*e,104*e
             d.rounded_rectangle([W/2-bw/2,H*0.66-bh/2,W/2+bw/2,H*0.66+bh/2],int(52*e),fill=(255,255,255,255)); fr.alpha_composite(L)
             if e>0.6: text_layer(fr,"verbavia.com",52,750,IND,W/2,H*0.66-34,alpha=(e-0.6)/0.4)
-    return shake(fr,li,amp=18 if name.startswith("owl") else 12), name
+    return shake(fr,li,amp=30 if name.startswith("owl") else 12), name
 
 def scene_title(li):
     fr=Image.new("RGBA",(W,H),PAPER+(255,))
@@ -203,7 +209,7 @@ def render_frame(i):
     out+=np.random.default_rng(i).normal(0,g,out.shape).astype(np.float32)
     return Image.fromarray((np.clip(out,0,1)*255).astype(np.uint8))
 
-STYLE=[6,22,44,60,110,180,290,420,520,640,700]
+STYLE=[60,70,100,180,240,300,310,330,420,470,560,600,640,700]
 if __name__=="__main__":
     mode=sys.argv[1] if len(sys.argv)>1 else "style"
     if mode=="style":
