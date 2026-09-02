@@ -1,7 +1,7 @@
 """Running-gag guide bed. Normal beats: ticks + taps. Owl entries: a 60ms hard mute, then an
 ABRUPT sting (noise burst + inharmonic screech + sub drop), escalating across the three."""
 import numpy as np, wave
-SR,FPS=48000,30; NF=540; DUR=NF/FPS; N=int(SR*DUR); t=np.arange(N)/SR
+SR,FPS=48000,30; NF=744; DUR=NF/FPS; N=int(SR*DUR); t=np.arange(N)/SR
 rng=np.random.default_rng(21); mix=np.zeros(N)
 def env(s,L,atk=0.002,p=2.4):
     e=np.zeros(N); i0=int(s*SR); i1=min(int((s+L)*SR),N)
@@ -24,7 +24,7 @@ def sting(s,level):
     amp=[0,0.55,0.8,1.0][level]
     # hard mute 60 ms before
     i0=int((s-0.06)*SR); mix[max(i0,0):int(s*SR)]=0.0
-    L=[0,0.9,1.4,2.2][level]; i1=min(int((s+L)*SR),N); n=i1-int(s*SR); lt=np.arange(n)/SR
+    L=[0,1.2,1.9,2.8][level]; i1=min(int((s+L)*SR),N); n=i1-int(s*SR); lt=np.arange(n)/SR
     e=(1-np.clip(lt/L,0,1))**2.2
     seg=np.zeros(n)
     seg+=rng.normal(0,1,n)*e*0.55                                     # noise burst
@@ -43,18 +43,19 @@ def sting(s,level):
     mix[int(s*SR):i1]+=amp*seg
     mix[int(s*SR):int(s*SR)+int(0.004*SR)]*=np.linspace(1,1,int(0.004*SR))    # keep the hard edge
 
-# timeline (s): owl1 0.0-2.2 | r1 2.2-5.4 | owl2 5.4-8.0 | r2 8.0-11.2 | owl3 11.2-15.0 | out 15.0-18.0
-sting(0.0,1)
-for s in np.arange(2.2,5.4,1.0): tick(s,0.22)
-tap(2.2,210,0.5); [pop(2.2+f/FPS) for f in (40,48,56)]
-sting(5.4,2)
-for s in np.arange(8.0,11.2,1.0): tick(s,0.26,2600)
-tap(8.0,210,0.5); [pop(8.0+f/FPS) for f in (44,52,60)]
-for f in (30,36,42,48,54): tick(8.0+f/FPS,0.15,3100)
-sting(11.2,3)
-# outro: cut to silence then a clean tap + pop on the pill
-mix[int(15.0*SR)-int(0.06*SR):int(15.0*SR)]=0
-tap(15.0,220,0.5); tap(15.0+30/FPS,320,0.45,0.3)
+# timeline (s): title 0-1.8 | owl1 1.8-4.73 | r1 4.73-9.0 | owl2 9.0-12.47 | r2 12.47-16.73 | owl3 16.73-21.8 | out 21.8-24.8
+T=54/FPS
+tap(0.0,220,0.5); [pop(0.0+f/FPS,0.3,1100) for f in (4,10,16,22)]
+sting(T,1)
+for s_ in np.arange(T+88/FPS,T+216/FPS,1.0): tick(s_,0.22)
+tap(T+88/FPS,210,0.5); [pop(T+(88+f)/FPS) for f in (40,48,56)]
+sting(T+216/FPS,2)
+for s_ in np.arange(T+320/FPS,T+448/FPS,1.0): tick(s_,0.26,2600)
+tap(T+320/FPS,210,0.5); [pop(T+(320+f)/FPS) for f in (44,52,60)]
+for f in (30,36,42,48,54): tick(T+(320+f)/FPS,0.15,3100)
+sting(T+448/FPS,3)
+mix[int((T+600/FPS)*SR)-int(0.06*SR):int((T+600/FPS)*SR)]=0
+tap(T+600/FPS,220,0.5); tap(T+630/FPS,320,0.45,0.3)
 mix-=mix.mean(); pk=np.max(np.abs(mix)); mix=np.tanh(mix/max(pk,1e-9)*1.3)*0.9
 mix*=np.clip((N-np.arange(N))/(0.04*SR),0,1)
 st=np.stack([mix,mix*0.99],axis=1)

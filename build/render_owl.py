@@ -7,17 +7,17 @@ from PIL import Image, ImageDraw, ImageFilter
 import numpy as np
 OUT="/home/user/Tik-Tok/build/frames_ow"; os.makedirs(OUT,exist_ok=True)
 YEL=(255,214,10); PAPER=(238,240,255)
-BEATS=[("owl1",0,66),("r1",66,162),("owl2",162,240),("r2",240,336),("owl3",336,450),("out",450,540)]
-N=540; TIMER_LEN=450
+BEATS=[("owl1",0,88),("r1",88,216),("owl2",216,320),("r2",320,448),("owl3",448,600),("out",600,690)]
+TITLE_F=54; N=690+TITLE_F; TIMER_LEN=600
 OWLS={k:Image.open(f"{SP}/{k}.png").convert("RGBA") for k in ["owl_l1","owl_l2","owl_l3"]}
 
 def hud(fr,i,dark=False,hide=False):
     if hide: return
-    secs=max(0.0,15.0-i/FPS); urgent=secs<4.0
+    secs=max(0.0,20.0-i/FPS); urgent=secs<5.0
     L=Image.new("RGBA",(W,H),(0,0,0,0)); d=ImageDraw.Draw(L)
     pc=RED if urgent else (WHT if dark else INK)
     d.rounded_rectangle([W-64-250,40,W-64,40+92],46,fill=pc+(255,))
-    d.rounded_rectangle([0,0,W*(secs/15.0),12],0,fill=(RED if urgent else (WHT if dark else IND))+(255,))
+    d.rounded_rectangle([0,0,W*(secs/20.0),12],0,fill=(RED if urgent else (WHT if dark else IND))+(255,))
     fr.alpha_composite(L)
     tc=WHT if (urgent or not dark) else INK
     text_layer(fr,f"{secs:04.1f}s",48,850,tc,W-64-125,56)
@@ -182,17 +182,28 @@ def scene(i):
             if e>0.6: text_layer(fr,"verbavia.com",52,750,IND,W/2,H*0.66-34,alpha=(e-0.6)/0.4)
     return shake(fr,li,amp=18 if name.startswith("owl") else 12), name
 
+def scene_title(li):
+    fr=Image.new("RGBA",(W,H),PAPER+(255,))
+    pop_words(fr,["This","is"],H*0.30,92,SUB,0,li,stagger=2,dur=6)
+    pop_words(fr,["everything","wrong"],H*0.30+110,104,INK,4,li,stagger=3,dur=7,hl={"wrong":YEL})
+    pop_words(fr,["with","Duolingo"],H*0.30+230,104,INK,10,li,stagger=3,dur=7)
+    pop_words(fr,["in","20","seconds."],H*0.30+350,104,INK,16,li,stagger=3,dur=7,hl={"20":RED})
+    text_layer(fr,"EVERYTHING WRONG WITH DUOLINGO",26,800,INK,64,60,align="l",ls=3)
+    return shake(fr,li,amp=10),"title"
+
 def render_frame(i):
-    fr,name=scene(i)
-    if name=="out" and i<450+12:
-        t=eo((i-450)/12); prev,_=scene(449); m=Image.new("L",(W,H),0); r=int(t*H*1.25)
+    if i<TITLE_F: fr,name=scene_title(i)
+    else:
+        i=i-TITLE_F; fr,name=scene(i)
+    if name=="out" and i<600+12:
+        t=eo((i-600)/12); prev,_=scene(599); m=Image.new("L",(W,H),0); r=int(t*H*1.25)
         ImageDraw.Draw(m).ellipse([W/2-r,H-r*1.6,W/2+r,H+r*0.4],fill=255); fr=Image.composite(fr,prev,m)
     out=np.asarray(fr.convert("RGB"),dtype=np.float32)/255.0
     g=0.004 if not name.startswith("owl") else (0.012 if name=="owl1" else 0.03)
     out+=np.random.default_rng(i).normal(0,g,out.shape).astype(np.float32)
     return Image.fromarray((np.clip(out,0,1)*255).astype(np.uint8))
 
-STYLE=[3,30,60,80,110,150,170,200,236,255,290,330,345,380,420,447,470,530]
+STYLE=[6,22,44,60,110,180,290,420,520,640,700]
 if __name__=="__main__":
     mode=sys.argv[1] if len(sys.argv)>1 else "style"
     if mode=="style":
