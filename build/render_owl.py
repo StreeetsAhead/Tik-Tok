@@ -142,9 +142,9 @@ def scene(i):
                 a=img.copy(); a.putalpha(a.split()[3].point(lambda p:int(p*e)))
                 fr.alpha_composite(a,(int(W/2-a.width/2+outx),int(H*0.56+80*(1-e)-a.height/2)))
             if li>=158:
-                pop_words(fr,["Fun"],H*0.50,150,INK,158,li,dur=6,cx=W*0.30,hl={"Fun":YEL})
-                pop_words(fr,["≠"],H*0.50,150,RED,162,li,dur=6,cx=W*0.53)
-                pop_words(fr,["fluent."],H*0.50,150,INK,166,li,dur=6,cx=W*0.76)
+                pop_words(fr,["Fun"],H*0.50,150,INK,158,li,dur=6,cx=W*0.20,hl={"Fun":YEL})
+                pop_words(fr,["≠"],H*0.50,150,RED,162,li,dur=6,cx=W*0.44)
+                pop_words(fr,["fluent."],H*0.50,150,INK,166,li,dur=6,cx=W*0.735)
             bt=(li-22)/14
             if bt>0 and li<150:
                 cw=900; chh=int(506*(900/1077)); x0=W/2-cw/2; y0=H*0.56-chh/2
