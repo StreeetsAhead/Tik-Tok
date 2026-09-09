@@ -94,3 +94,23 @@ downsampled once — so every edge is crisp and nothing is blurred.
 
 `python3 render_svg.py verbavia_logo.svg out.png 1200` re-renders the logo at any size.
 `python3 make_kill3.py` rebuilds both crops.
+
+---
+
+## v4 — planted sword (`make_sword.py`)
+
+Minimal edit off v3. Duo's pose, the blood pool, the drips, the floor and the cone are all
+unchanged; only the weapon and the mascot's position moved.
+
+- **Sword replaces the dagger**: longer blade with a fuller (the central groove) running most
+  of its length, flared quillons on the crossguard with rounded terminals, a wrapped grip
+  and a disc pommel.
+- **Near-vertical**: the blade sits at ~77° so it reads as *planted* and standing in him
+  rather than mid-thrust. Driven deeper too — the tip sits at 70% of his body height.
+- **Mascot beside the hilt** rather than gripping it, which is what "has planted it" looks
+  like.
+
+The wound, drips and blade smear all reposition automatically: the entry point is computed
+by walking back along the blade axis, so changing the angle or length moves everything
+downstream with it. Length is the one value to watch — much above `px(520)` and the hilt
+runs off the top of the frame.
