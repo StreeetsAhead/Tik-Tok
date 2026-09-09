@@ -67,3 +67,30 @@ v1 was flat clip-art. v2 is a lit scene, supersampled 2x and downsampled.
   fine grain.
 
 Deliberately bloodless. Add a trickle by drawing from `ENTRY` along `(ux,uy)` if wanted.
+
+---
+
+## v3 — flat vector, the version that shipped
+
+v2's lit render was the wrong direction. v3 goes back to matching Duolingo's own flat art
+style (which is also their reference frame's style), rendered at **3x supersample** and
+downsampled once — so every edge is crisp and nothing is blurred.
+
+- **Logo**: `verbavia_logo.svg`, a vector rebuild of the real Verbavia compass. The site's
+  `favicon.svg` is only an emoji in a purple circle, so this was reconstructed from the
+  supplied artwork: ring and lug in a #7C74E8→#4F46C9 gradient, lavender face, 8-point rose
+  generated programmatically (4 long cardinals, 4 short diagonals) with each point split
+  into two facets and lit/shadowed by dot product against an upper-left light vector, red
+  north, white hub. Rendered through headless Chromium at any resolution.
+- **Wound**: sharp, not blurred. A rotated slit stamped at the computed entry point (walk
+  back along the blade axis until Duo's alpha drops), dark rim plus a near-black core.
+- **Blood**: flat vector in three tones. Pool built from layered organic blobs — an ellipse
+  whose radius is modulated by four sine harmonics, so it reads hand-drawn rather than
+  geometric. Drips are tapered polygons with a bulb at the tip, masked to Duo's silhouette
+  so they run down his body and stop at his edge. A smear runs up the blade from the wound,
+  masked to the blade's alpha.
+- **Halo fix**: Duo's alpha is eroded with a 9px MinFilter. His cutout carries a white
+  fringe from the page background, and anything less leaves a visible outline.
+
+`python3 render_svg.py verbavia_logo.svg out.png 1200` re-renders the logo at any size.
+`python3 make_kill3.py` rebuilds both crops.

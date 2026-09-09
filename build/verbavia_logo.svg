@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 420" width="420" height="420">
+  <defs>
+    <linearGradient id="ring" x1="0.15" y1="0" x2="0.85" y2="1">
+      <stop offset="0" stop-color="#7C74E8"/><stop offset="0.5" stop-color="#6259DC"/><stop offset="1" stop-color="#4F46C9"/>
+    </linearGradient>
+    <linearGradient id="face" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#F4F2FB"/><stop offset="1" stop-color="#E2DEF2"/>
+    </linearGradient>
+    <linearGradient id="redL" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#E8615E"/><stop offset="1" stop-color="#F79C97"/>
+    </linearGradient>
+    <linearGradient id="redR" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#C9403F"/><stop offset="1" stop-color="#E8615E"/>
+    </linearGradient>
+    <linearGradient id="indL" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5B51C8"/><stop offset="1" stop-color="#4A3FAE"/>
+    </linearGradient>
+    <linearGradient id="indR" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#332A80"/><stop offset="1" stop-color="#241D63"/>
+    </linearGradient>
+  </defs>
+  <g>
+    <circle cx="318" cy="92" r="26" fill="none" stroke="url(#ring)" stroke-width="17"/>
+    <circle cx="200" cy="222" r="150" fill="none" stroke="url(#ring)" stroke-width="38"/>
+    <circle cx="200" cy="222" r="132" fill="url(#face)"/>
+    <polygon points="200,222 262.2,159.8 214.8,236.8" fill="url(#indR)"/>
+    <polygon points="200,222 262.2,159.8 185.2,207.2" fill="url(#indL)"/>
+    <polygon points="200,222 137.8,159.8 214.8,207.2" fill="url(#indL)"/>
+    <polygon points="200,222 137.8,159.8 185.2,236.8" fill="url(#indL)"/>
+    <polygon points="200,222 137.8,284.2 185.2,207.2" fill="url(#indL)"/>
+    <polygon points="200,222 137.8,284.2 214.8,236.8" fill="url(#indR)"/>
+    <polygon points="200,222 262.2,284.2 185.2,236.8" fill="url(#indR)"/>
+    <polygon points="200,222 262.2,284.2 214.8,207.2" fill="url(#indR)"/>
+    <polygon points="200,222 312.0,222.0 200.0,249.0" fill="url(#indR)"/>
+    <polygon points="200,222 312.0,222.0 200.0,195.0" fill="url(#indR)"/>
+    <polygon points="200,222 88.0,222.0 200.0,195.0" fill="url(#indL)"/>
+    <polygon points="200,222 88.0,222.0 200.0,249.0" fill="url(#indL)"/>
+    <polygon points="200,222 200.0,334.0 173.0,222.0" fill="url(#indR)"/>
+    <polygon points="200,222 200.0,334.0 227.0,222.0" fill="url(#indR)"/>
+    <polygon points="200,222 200.0,110.0 227.0,222.0" fill="url(#redL)"/>
+    <polygon points="200,222 200.0,110.0 173.0,222.0" fill="url(#redL)"/>
+    <circle cx="200" cy="222" r="11" fill="#FFFFFF"/>
+  </g>
+</svg>
