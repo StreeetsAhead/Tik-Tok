@@ -124,5 +124,40 @@ ov_small = ov.resize((FW,FH), Image.LANCZOS)
 ov_small.save("sword_overlay.png")
 frame = Image.open("duo_or_die.png").convert("RGBA")
 frame.alpha_composite(ov_small)
+
+# ---- Verbavia lockup booming across the top ----
+from PIL import ImageFont
+FS = 3
+BW, BH = FW*FS, FH*FS
+CY = 56*FS
+
+fnt = ImageFont.truetype("fonts/InterVar.ttf", 80*FS)
+try: fnt.set_variation_by_axes([32, 900])
+except Exception: pass
+word = "verbavia"
+probe = ImageDraw.Draw(Image.new("RGBA",(8,8)))
+tw = probe.textlength(word, font=fnt)
+
+lg = Image.open("verbavia_logo.png").convert("RGBA")
+lsz = 116*FS
+lg = lg.resize((lsz, int(lg.height*lsz/lg.width)), Image.LANCZOS)
+gap = 24*FS
+x0 = (BW - (lg.width + gap + tw))/2
+
+# glow comes from the wordmark only, so the compass keeps its own colour
+txt = Image.new("RGBA",(BW,BH),(0,0,0,0))
+ImageDraw.Draw(txt).text((x0 + lg.width + gap, CY - 53*FS), word, font=fnt, fill=(255,255,255,255))
+gl = np.asarray(txt).astype(np.float32); gl[...,0:3] = np.array([124,108,240])
+gl = Image.fromarray(gl.astype(np.uint8))
+
+out_band = Image.new("RGBA",(BW,BH),(0,0,0,0))
+out_band.alpha_composite(gl.filter(ImageFilter.GaussianBlur(20*FS)))
+out_band.alpha_composite(gl.filter(ImageFilter.GaussianBlur(8*FS)))
+out_band.alpha_composite(txt)
+lgl = Image.new("RGBA",(BW,BH),(0,0,0,0))
+lgl.alpha_composite(lg,(int(x0), int(CY - lg.height/2)))
+out_band.alpha_composite(lgl.filter(ImageFilter.GaussianBlur(11*FS)))
+out_band.alpha_composite(lgl)
+frame.alpha_composite(out_band.resize((FW,FH), Image.LANCZOS))
 frame.convert("RGB").save("duo_or_die_sword.png")
 print("overlay saved", (FW,FH), "| entry", (ENTRY[0]//SS, ENTRY[1]//SS), "| angle", round(ang,1))

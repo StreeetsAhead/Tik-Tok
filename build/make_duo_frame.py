@@ -76,7 +76,7 @@ for cx,cy,rx,ry,cs in [(455,212,40,38,17),(538,268,46,44,19)]:
 # ---------- text ----------
 def ctext(s,y,size,wt):
     f=F(size,wt); w=d.textlength(s,font=f); d.text((W/2-w/2,px(y)),s,font=f,fill=(255,255,255))
-ctext("duolingo",44,34,650)
+ctext("duolingo",112,23,600)
 ctext("It's Duo or Die!",578,42,800)
 
 img.convert("RGB").resize((FW,FH), Image.LANCZOS).save("duo_or_die.png")

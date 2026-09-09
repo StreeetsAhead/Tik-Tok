@@ -148,3 +148,12 @@ producing `duo_or_die_sword.png` and the standalone `sword_overlay.png`.
 Because the overlay's three clips (blade erased inside the silhouette, drips clipped to it,
 pool clipped to its inverse) all key off `duo_mask.png`, dropping in a real mask of the
 original frame makes the same overlay align to the genuine artwork with no other changes.
+
+## v7 — Verbavia lockup
+
+Compass plus "verbavia" at 80px weight 900, centred across the top at 3x supersample.
+"duolingo" shrinks to 23px and drops to y=112 so both brands read and the joke survives.
+
+The glow is generated from the **wordmark only** — a purple-tinted copy blurred at two
+radii. Applying it to the compass as well muddied the rose into a blob, so the logo gets
+its own much tighter halo and then composites clean on top.
