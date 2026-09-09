@@ -137,3 +137,14 @@ Three masking rules make it composite correctly on top of an image it can't see:
 Duo's silhouette is traced by hand in `duo_mask` as five ellipses matching that frame. If
 the real file ever lands on disk, swap that trace for his actual alpha and everything
 downstream (entry point, drips, pool) recomputes itself.
+
+## v6 — rebuilt frame + composite
+
+`make_duo_frame.py` reconstructs the "It's Duo or Die!" frame at 962x655 (black ground,
+spotlight cone, stage ellipse, dead Duo, both text lines) and writes `duo_mask.png`, his
+silhouette. `make_sword_overlay.py` then reads that mask, plants the sword and composites,
+producing `duo_or_die_sword.png` and the standalone `sword_overlay.png`.
+
+Because the overlay's three clips (blade erased inside the silhouette, drips clipped to it,
+pool clipped to its inverse) all key off `duo_mask.png`, dropping in a real mask of the
+original frame makes the same overlay align to the genuine artwork with no other changes.

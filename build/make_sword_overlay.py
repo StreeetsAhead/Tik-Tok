@@ -10,11 +10,8 @@ def trim(im):
 
 BLOOD_D=(140,16,24,255); BLOOD=(183,24,32,255); BLOOD_L=(214,46,52,255)
 
-# ---- Duo's silhouette in the screenshot, traced so blood can be masked to him ----
-duo_mask = Image.new("L",(W,H),0); m = ImageDraw.Draw(duo_mask)
-for cx,cy,rx,ry in [(458,302,163,108),(398,238,78,62),(548,252,86,72),(600,372,48,30),(470,352,120,60)]:
-    m.ellipse([px(cx-rx),px(cy-ry),px(cx+rx),px(cy+ry)], fill=255)
-duo_mask = duo_mask.filter(ImageFilter.GaussianBlur(px(1)))
+# ---- Duo's silhouette, taken from the rebuilt frame ----
+duo_mask = Image.open("duo_mask.png").convert("L").resize((W,H), Image.LANCZOS)
 
 # ---- sword ----
 def sword(L):
@@ -38,7 +35,7 @@ def sword(L):
     kd.ellipse([cx-POM*0.72,G0-POM*1.32,cx+POM*0.16,G0-POM*0.10], fill=(126,137,157,255))
     return k
 
-ANG, LEN = 20, px(300)
+ANG, LEN = 22, px(312)
 def marked(L):
     k=sword(L); d=ImageDraw.Draw(k)
     d.rectangle([k.width//2-1,L-3,k.width//2+1,L-1], fill=(255,0,255,255))
@@ -50,7 +47,7 @@ _h=np.argwhere((_m[...,0]<80)&(_m[...,1]>200)&(_m[...,2]>200))
 TIP_OFF=(int(_t[:,1].mean()),int(_t[:,0].mean())); HDL_OFF=(int(_h[:,1].mean()),int(_h[:,0].mean()))
 sw = sword(LEN).rotate(ANG, resample=Image.BICUBIC, expand=True)
 
-TIP = (px(448), px(362))                       # in his body mass, clear of the face
+TIP = (px(458), px(358))                       # in his body mass, clear of the face
 SW_XY = (TIP[0]-TIP_OFF[0], TIP[1]-TIP_OFF[1])
 HDL = (SW_XY[0]+HDL_OFF[0], SW_XY[1]+HDL_OFF[1])
 
@@ -65,7 +62,7 @@ def blob(cx,cy,rx,ry,seed,n=64,amp=0.20):
         mm=1+amp*sum(math.sin(fr[k]*t+ph[k])/(k+1.6) for k in range(4))
         pts.append((cx+math.cos(t)*rx*mm, cy+math.sin(t)*ry*mm))
     return pts
-PCX,PCY = px(455), px(415)
+PCX,PCY = px(460), px(412)
 bd.polygon(blob(PCX,PCY,px(178),px(44),7,amp=0.16), fill=BLOOD_D)
 bd.polygon(blob(PCX-px(8),PCY-px(4),px(144),px(34),11,amp=0.18), fill=BLOOD)
 bd.polygon(blob(PCX-px(42),PCY-px(8),px(50),px(11),3,amp=0.22), fill=BLOOD_L)
@@ -123,5 +120,9 @@ sm.putalpha(Image.fromarray((np.asarray(sm.split()[3]).astype(np.float32)
                              *np.asarray(swm).astype(np.float32)/255).astype(np.uint8)))
 ov.alpha_composite(sm)
 
-ov.resize((FW,FH), Image.LANCZOS).save("sword_overlay.png")
+ov_small = ov.resize((FW,FH), Image.LANCZOS)
+ov_small.save("sword_overlay.png")
+frame = Image.open("duo_or_die.png").convert("RGBA")
+frame.alpha_composite(ov_small)
+frame.convert("RGB").save("duo_or_die_sword.png")
 print("overlay saved", (FW,FH), "| entry", (ENTRY[0]//SS, ENTRY[1]//SS), "| angle", round(ang,1))
