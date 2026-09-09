@@ -114,3 +114,26 @@ The wound, drips and blade smear all reposition automatically: the entry point i
 by walking back along the blade axis, so changing the angle or length moves everything
 downstream with it. Length is the one value to watch — much above `px(520)` and the hilt
 runs off the top of the frame.
+
+---
+
+## v5 — drop-in overlay (`make_sword_overlay.py`)
+
+For compositing onto Duolingo's own "It's Duo or Die!" frame, which can't be edited here —
+images pasted into chat render but never land on disk, and `/mnt/attach` stays empty.
+
+`sword_overlay.png` is **962x655 with alpha**, matching that screenshot pixel for pixel, so
+it aligns at 0,0 with no scaling. Contents: the planted sword, the entry wound, drips, the
+ground pool and the blade smear.
+
+Three masking rules make it composite correctly on top of an image it can't see:
+
+- **Blade** is erased wherever Duo's silhouette is, so the tip reads as buried rather than
+  lying across him.
+- **Drips** are clipped *to* the silhouette, so they run down his body and stop at his edge.
+- **Pool** is clipped to the *inverse* silhouette, so it rings him on the stage instead of
+  painting over him.
+
+Duo's silhouette is traced by hand in `duo_mask` as five ellipses matching that frame. If
+the real file ever lands on disk, swap that trace for his actual alpha and everything
+downstream (entry point, drips, pool) recomputes itself.
