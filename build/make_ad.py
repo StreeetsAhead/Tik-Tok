@@ -1,5 +1,5 @@
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
-import numpy as np
+import numpy as np, math
 
 SS=3; AW,AH=1080,1350; W,H=AW*SS,AH*SS
 def px(v): return int(round(v*SS))
@@ -12,13 +12,12 @@ def F(sz,wt):
         except Exception: pass
         _F[k]=f
     return _F[k]
-
 BG=(247,248,251); INK=(26,30,48); SUB=(107,113,134); MUT=(154,160,178)
-IND=(79,70,229); IND_SOFT=(199,203,245); PILLBG=(233,232,252); CARD=(255,255,255)
+IND=(79,70,229); PILL=(233,232,252); CARD=(255,255,255); LINE=(229,231,242)
 
 img=Image.new("RGB",(W,H),BG); d=ImageDraw.Draw(img)
 ys,xs=np.mgrid[0:H,0:W]
-g=np.clip(1-np.sqrt(((xs-W*0.5)/(W*0.95))**2+((ys-H*0.09)/(H*0.40))**2),0,1)**1.8
+g=np.clip(1-np.sqrt(((xs-W*0.5)/(W*0.95))**2+((ys-H*0.08)/(H*0.38))**2),0,1)**1.8
 img=Image.fromarray(np.clip(np.asarray(img).astype(np.float32)+g[...,None]*np.array([-7,-9,9]),0,255).astype(np.uint8))
 d=ImageDraw.Draw(img)
 
@@ -32,68 +31,101 @@ def text(s,x,y,sz,wt,fill,anchor="l",ls=0):
     else: d.text((x,y),s,font=f,fill=fill)
     return wdt
 
-# lockup
+def shadow_card(x,y,w,h,r):
+    sh=Image.new("RGBA",(int(w+px(26)),int(h+px(26))),(0,0,0,0))
+    ImageDraw.Draw(sh).rounded_rectangle([px(13),px(15),px(13)+w,px(15)+h],r,fill=(20,25,60,30))
+    reg=(int(x-px(13)),int(y-px(15)),int(x-px(13))+sh.width,int(y-px(15))+sh.height)
+    img.paste(Image.alpha_composite(img.crop(reg).convert("RGBA"),
+              sh.filter(ImageFilter.GaussianBlur(px(6)))).convert("RGB"),(reg[0],reg[1]))
+    d.rounded_rectangle([x,y,x+w,y+h],r,fill=CARD)
+
+# ---- lockup + badge ----
 lg=Image.open("verbavia_logo.png").convert("RGBA")
-lsz=px(64); lg=lg.resize((lsz,int(lg.height*lsz/lg.width)),Image.LANCZOS)
-fw=F(38,800); tw=d.textlength("Verbavia",font=fw)
-lx=(W-(lg.width+px(14)+tw))/2
-img.paste(lg,(int(lx),px(48)),lg); d.text((lx+lg.width+px(14),px(54)),"Verbavia",font=fw,fill=IND)
+lsz=px(60); lg=lg.resize((lsz,int(lg.height*lsz/lg.width)),Image.LANCZOS)
+fw=F(36,800); tw=d.textlength("Verbavia",font=fw); lx=(W-(lg.width+px(13)+tw))/2
+img.paste(lg,(int(lx),px(44)),lg); d.text((lx+lg.width+px(13),px(50)),"Verbavia",font=fw,fill=IND)
+bt="8 LANGUAGES · A1 TO C2 · FREE"; fb=F(18,750)
+bw=d.textlength(bt,font=fb)+px(3.2)*len(bt); bx=(W-(bw+px(44)))/2; by=px(124)
+d.rounded_rectangle([bx,by,bx+bw+px(44),by+px(43)],px(22),fill=PILL)
+text(bt,W/2,by+px(11),18,750,IND,"c",ls=px(3.2)/SS)
 
-# badge
-bt="8 LANGUAGES · A1 TO C2 · FREE"; fb=F(19,750); bw=d.textlength(bt,font=fb)+px(10)*7
-bx=(W-(bw+px(48)))/2; by=px(136)
-d.rounded_rectangle([bx,by,bx+bw+px(48),by+px(46)],px(23),fill=PILLBG)
-text(bt,W/2,by+px(12),19,750,IND,"c",ls=px(3.4)/SS)
+# ---- headline ----
+text("A real course,",W/2,px(190),56,850,INK,"c")
+text("not a tapping game.",W/2,px(262),56,850,IND,"c")
+text("Every lesson covers all five skills — then you're done for the day.",W/2,px(352),23,500,SUB,"c")
 
-# headline (site's own words)
-text("Learn the words people actually use,",W/2,px(214),47,850,INK,"c")
-text("in the order they use them.",W/2,px(278),47,850,IND,"c")
-text("Every course is built on a frequency list. The thousand most",W/2,px(360),24,500,SUB,"c")
-text("common words are about 80% of everyday speech — so that is",W/2,px(394),24,500,SUB,"c")
-text("where lesson one starts.",W/2,px(428),24,500,SUB,"c")
+# ---- the five skills (this is the point) ----
+SK=[("Vocabulary","vocab"),("Grammar","gram"),("Reading","read"),("Listening","listen"),("Writing","write")]
+n=len(SK); CW=px(186); GAP=px(14); CH=px(156); sx=(W-(n*CW+(n-1)*GAP))/2; CY=px(408)
+def icon(kind,cx,cy,s):
+    c=IND
+    if kind=="vocab":
+        for k,off in enumerate([px(10),px(4),-px(3)]):
+            d.rounded_rectangle([cx-s*0.46+off,cy-s*0.34+off,cx+s*0.40+off,cy+s*0.30+off],px(6),
+                                fill=(CARD if k<2 else c), outline=c, width=px(3))
+    elif kind=="gram":
+        d.rounded_rectangle([cx-s*0.44,cy-s*0.40,cx+s*0.44,cy+s*0.40],px(7),outline=c,width=px(4))
+        d.line([cx,cy-s*0.40,cx,cy+s*0.40],fill=c,width=px(4))
+        for i in range(3):
+            yy=cy-s*0.18+i*s*0.20
+            d.line([cx-s*0.32,yy,cx-s*0.08,yy],fill=c,width=px(3))
+            d.line([cx+s*0.08,yy,cx+s*0.32,yy],fill=c,width=px(3))
+    elif kind=="read":
+        d.rounded_rectangle([cx-s*0.44,cy-s*0.40,cx+s*0.44,cy+s*0.40],px(7),outline=c,width=px(4))
+        for i,wd in enumerate([0.62,0.74,0.50,0.68]):
+            yy=cy-s*0.24+i*s*0.17
+            d.line([cx-s*0.30,yy,cx-s*0.30+s*wd*0.78,yy],fill=c,width=px(3))
+    elif kind=="listen":
+        d.polygon([(cx-s*0.34,cy-s*0.14),(cx-s*0.10,cy-s*0.14),(cx+s*0.12,cy-s*0.40),
+                   (cx+s*0.12,cy+s*0.40),(cx-s*0.10,cy+s*0.14),(cx-s*0.34,cy+s*0.14)],fill=c)
+        for i,r in enumerate([0.20,0.34]):
+            d.arc([cx+s*0.10-s*r,cy-s*r,cx+s*0.10+s*r,cy+s*r],-60,60,fill=c,width=px(4))
+    elif kind=="write":
+        d.polygon([(cx-s*0.38,cy+s*0.38),(cx-s*0.30,cy+s*0.14),(cx+s*0.26,cy-s*0.42),
+                   (cx+s*0.40,cy-s*0.28),(cx-s*0.16,cy+s*0.28)],fill=c)
+        d.line([cx-s*0.38,cy+s*0.40,cx+s*0.40,cy+s*0.40],fill=c,width=px(4))
+for i,(label,kind) in enumerate(SK):
+    x=sx+i*(CW+GAP)
+    shadow_card(x,CY,CW,CH,px(18))
+    icon(kind,x+CW/2,CY+px(54),px(50))
+    text(label,x+CW/2,CY+px(104),19,750,INK,"c")
 
-# ---- the chart: single measure, one hue, focus row emphasised, direct labels ----
-text("HOW MUCH OF EVERYDAY SPEECH YOUR FIRST WORDS COVER",W/2,px(498),17,800,MUT,"c",ls=px(2.2)/SS)
-X0,X1=px(118),px(962); BARH=px(46)
-rows=[("Your first 100 words",0.50,"about half",False),
-      ("Your first 1,000 words",0.80,"about 80%",True),
-      ("Your first 3,000 words",0.90,"about 90%",False)]
-y=px(548)
-for label,frac,val,focus in rows:
-    text(label,X0,y,21,700,INK if focus else SUB,"l")
-    by2=y+px(30)
-    d.rounded_rectangle([X0,by2,X1,by2+BARH],px(6),fill=(234,236,246))
-    bw2=(X1-X0)*frac
-    d.rounded_rectangle([X0,by2,X0+bw2,by2+BARH],px(6),fill=IND if focus else IND_SOFT)
-    text(val,X0+bw2-px(16),by2+px(10),26,800,(255,255,255) if focus else (90,96,140),"r")
-    y+=px(116)
-text("Typical figures for conversation; the exact share varies by language.",W/2,px(898),18,500,MUT,"c")
+# ---- what one lesson holds ----
+text("WHAT'S IN ONE LESSON",W/2,px(604),17,800,MUT,"c",ls=px(2.4)/SS)
+ROWS=["3 reading parts and 3 listening parts",
+      "8 new words, most-used first from a frequency list",
+      "One grammar point — explained properly, then tested",
+      "A writing task, from lesson 7",
+      "Around 20–30 minutes, then you're done"]
+LX=px(150); y=px(648)
+for r in ROWS:
+    d.ellipse([LX,y+px(2),LX+px(26),y+px(28)],fill=IND)
+    d.line([LX+px(7),y+px(15),LX+px(12),y+px(21)],fill=(255,255,255),width=px(3))
+    d.line([LX+px(12),y+px(21),LX+px(20),y+px(9)],fill=(255,255,255),width=px(3))
+    text(r,LX+px(44),y,23,600,INK,"l")
+    y+=px(50)
+text("Complete lessons; shorter options if that's more than your day allows.",W/2,px(906),18,500,MUT,"c")
 
-# languages
-text("8 courses, one method.",W/2,px(952),27,800,INK,"c")
+# ---- languages ----
+text("8 courses, one method.",W/2,px(958),25,800,INK,"c")
 LIVE=[("spanish","Spanish"),("french","French"),("italian","Italian"),("portuguese","Portuguese"),
       ("german","German"),("mandarin","Mandarin"),("esperanto","Esperanto"),("shanghainese","Shanghainese")]
-n=len(LIVE); CW=px(108); GAP=px(10); CH=px(128)
-sx=(W-(n*CW+(n-1)*GAP))/2; CY=px(1004)
+n2=len(LIVE); CW2=px(106); GAP2=px(10); CH2=px(120); sx2=(W-(n2*CW2+(n2-1)*GAP2))/2; CY2=px(1006)
 for i,(key,label) in enumerate(LIVE):
-    x=sx+i*(CW+GAP)
-    sh=Image.new("RGBA",(CW+px(24),CH+px(24)),(0,0,0,0))
-    ImageDraw.Draw(sh).rounded_rectangle([px(12),px(14),px(12)+CW,px(14)+CH],px(14),fill=(20,25,60,30))
-    reg=(int(x-px(12)),CY-px(14),int(x-px(12))+sh.width,CY-px(14)+sh.height)
-    img.paste(Image.alpha_composite(img.crop(reg).convert("RGBA"),sh.filter(ImageFilter.GaussianBlur(px(5)))).convert("RGB"),(reg[0],reg[1]))
-    d.rounded_rectangle([x,CY,x+CW,CY+CH],px(14),fill=CARD)
+    x=sx2+i*(CW2+GAP2)
+    shadow_card(x,CY2,CW2,CH2,px(14))
     fl=Image.open(f"lang/flag_{key}.png").convert("RGB")
-    fw2=px(64); fl=fl.resize((fw2,int(fl.height*fw2/fl.width)),Image.LANCZOS)
+    fw2=px(62); fl=fl.resize((fw2,int(fl.height*fw2/fl.width)),Image.LANCZOS)
     fm=Image.new("L",fl.size,0); ImageDraw.Draw(fm).rounded_rectangle([0,0,fl.width-1,fl.height-1],px(5),fill=255)
-    img.paste(fl,(int(x+(CW-fl.width)/2),CY+px(20)),fm)
-    text(label,x+CW/2,CY+px(92),14 if len(label)>9 else 16,700,INK,"c")
+    img.paste(fl,(int(x+(CW2-fl.width)/2),CY2+px(18)),fm)
+    text(label,x+CW2/2,CY2+px(86),13 if len(label)>9 else 15,700,INK,"c")
 
-# CTA
-BY=px(1188); BH2=px(88); BW2=px(556); BX=(W-BW2)/2
+# ---- CTA ----
+BY=px(1180); BH2=px(86); BW2=px(548); BX=(W-BW2)/2
 d.rounded_rectangle([BX,BY+px(6),BX+BW2,BY+BH2+px(6)],BH2//2,fill=(120,112,236,70))
 d.rounded_rectangle([BX,BY,BX+BW2,BY+BH2],BH2//2,fill=IND)
-text("Start free at verbavia.com",W/2,BY+px(24),29,750,(255,255,255),"c")
-text("No account needed · web and Android",W/2,px(1298),20,550,MUT,"c")
+text("Start free at verbavia.com",W/2,BY+px(23),28,750,(255,255,255),"c")
+text("No account needed · web and Android",W/2,px(1290),19,550,MUT,"c")
 
 img.resize((AW,AH),Image.LANCZOS).save("verbavia_ad.png")
 print("ad saved")
