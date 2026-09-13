@@ -1,44 +1,38 @@
 # Verbavia ad (`make_ad.py`)
 
-1080x1350 (4:5) plus a 1:1 crop, rendered at 3x supersample. Built on Verbavia's own
-palette: indigo #4F46E5, ink #1A1E30, surface #F7F8FB, Inter variable.
+1080x1350 feed, 1:1 and 1080x1920 story, rendered at 3x supersample. Brand palette:
+indigo #4F46E5, ink #1A1E30, surface #F7F8FB, Inter variable.
 
-## Everything on it is sourced, not invented
+## Source of truth
 
-| Claim | Where it comes from |
-|---|---|
-| "Learn a language, actually get fluent." | the site's own hero headline |
-| "One real lesson a day — from your first word to C2." | hero subhead |
-| "A 300-lesson syllabus, A1 through C2" | comparison section |
-| "Grammar explained — the rule first, then the test" | "Teaches the rule properly, then tests it" |
-| "most apps plateau here" at A2 | the site's own "Plateau somewhere around A2" |
-| 15 languages, all flags | scraped from the live page |
-| Free | the hero badge |
+Every line is the live site's own copy, re-scraped at build time (`site_copy.txt`):
 
-Flags are real crops from a full-page capture, not emoji — several of these languages
-(Rapa Nui, Shanghainese, Esperanto) have no flag emoji at all. They're located by scanning
-the page for saturated pixel bands, which finds all 15 without needing selectors, then
-tightened with a per-language height cap so neighbouring label text doesn't bleed in.
+- headline and subhead — the current hero, verbatim
+- the badge "8 LANGUAGES · A1 TO C2 · FREE" — the hero badge
+- the three coverage figures and their caveat — the "WHY THE ORDER MATTERS" section
+- "8 courses, one method" and "no account needed" — the language picker
+- "web and Android" — the footer
 
-## The CEFR meter
+**Not used: the 300-lesson figure.** The site still says "A 300-lesson syllabus that runs
+to C2" in its comparison table, but the course is past that now — worth fixing on the site,
+since it undersells. The ad says "A1 to C2" instead, which stays true as the course grows.
 
-Originally drafted as indigo-vs-grey (Verbavia vs everyone else). The dataviz validator
-failed it: `#9CA3AF` falls below the chroma floor and "reads gray," with contrast 2.47
-against the surface.
+**Not used: the Pacific languages.** An earlier draft led on Tok Pisin, Samoan, Fijian,
+Marshallese, Kiribati, Palauan and Rapa Nui. Only eight courses are live, all non-Pacific.
+`audit.py` re-checks: it counts `.language-card` elements and prints each name, so the ad's
+language row can be regenerated against reality rather than memory.
 
-That's the right call, and the fix isn't a different grey — it's a different **form**. A
-two-category comparison was never the honest encoding here. It's now a single-hue meter on
-a recessive track with one annotated reference marker at A2. One hue, direct labels on every
-level, identity never carried by colour alone.
+## The chart
 
-```
-node scripts/validate_palette.js "#4F46E5,#9CA3AF" --mode light
-  [FAIL] Chroma floor      below floor (reads gray): #9CA3AF 0.019
-  [WARN] Contrast          below 3:1: #9CA3AF 2.47
-```
+Magnitude of one measure across three ordered categories, so: horizontal bars, **one hue**,
+no legend (a single series is named by its own title), direct value labels on every bar,
+recessive track, 6px rounded ends.
 
-## Copy note
+The 1,000-word row is the subject of the headline, so it carries full-strength indigo and
+bold ink while the other two sit in a lighter tint of the same hue — a focus/context
+treatment within one hue, not a categorical palette. The caveat line travels with the
+figures rather than being dropped, because "about" is doing real work in those numbers.
 
-"including seven nobody else teaches" was softened to "most apps ignore" — the stronger
-version is hard to prove, since another app may well carry Samoan. The weaker claim is
-defensible and lands the same way.
+An earlier version encoded Verbavia-vs-other-apps as indigo-vs-grey and failed the
+validator (`#9CA3AF` below the chroma floor, contrast 2.47). The fix was to change form,
+not colour.
